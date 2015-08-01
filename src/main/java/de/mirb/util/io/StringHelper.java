@@ -18,6 +18,8 @@
  ******************************************************************************/
 package de.mirb.util.io;
 
+import de.mirb.util.common.Result;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -37,6 +39,7 @@ public class StringHelper {
 
   public static class Stream {
     private final byte[] data;
+    private Charset currentUsedCharset = Charset.forName(DEFAULT_ENCODING);
 
     private Stream(final byte[] data) {
       this.data = data;
@@ -62,7 +65,7 @@ public class StringHelper {
     }
 
     public String asString() {
-      return asString(DEFAULT_ENCODING);
+      return asString(currentUsedCharset.name());
     }
 
     public String asString(final String charsetName) {
@@ -91,7 +94,7 @@ public class StringHelper {
 
     public InputStream asStreamWithLineSeparation(String separator) throws IOException {
       String asString = asStringWithLineSeparation(separator);
-      return new ByteArrayInputStream(asString.getBytes(DEFAULT_ENCODING));
+      return new ByteArrayInputStream(asString.getBytes(currentUsedCharset.name()));
     }
 
     /**
@@ -104,7 +107,14 @@ public class StringHelper {
     public int linesCount() {
       return StringHelper.countLines(asString(), "\r\n");
     }
+
+    public boolean contains(String... values) {
+      Result r = StringHelper.contains(asString(), values);
+      return r.isSuccess();
+    }
   }
+
+
 
   public static Stream toStream(final InputStream stream) throws IOException {
     byte[] result = new byte[0];
@@ -211,4 +221,24 @@ public class StringHelper {
     }
     return b.toString();
   }
+
+  public static Result contains(String content, String... values) {
+    int index = 0;
+    for (String value : values) {
+      int currentIndex = content.indexOf(value, index);
+      if(currentIndex == -1) {
+        if(content.contains(value)) {
+          int foundIndex = content.indexOf(value);
+          return Result.failed("Expected value '" + value + "' was found but not were expected " +
+              "(started to search from position '" + index + "' but found first occurrence at index '" +
+              foundIndex + "').");
+        } else {
+          return Result.failed("Expected value '" + value + "' was not found");
+        }
+      }
+      index = currentIndex;
+    }
+    return Result.success();
+  }
+
 }
