@@ -1,0 +1,38 @@
+= miUtils
+
+== Disclaimer
+Current source code and version is published without license. +
+If you (somebody) want to use this in his project please contact me.
+Afterwards I will grant the use of this code without warranty.
+When I find some time to inform myself about the different possible licenses at link:http://choosealicense.com[choosealicense.com]
+I will probably change to a suitable license.
+
+== General information
+This `miUtils` project is just a collection of classes (code snippets) which is useful for myself and is used several private (non-public, non-commercial) projects.
+
+
+== Technical information
+  * The release versions are based on link:http://semver.org[Semantic Versioning 2.0.0].
+  * The latest release require `Java SE 7` (or newer) and is build with link:https://maven.apache.org[Maven] (version `3.3.x`).
+
+
+== Current Features _(for latest stable version)_
+
+  * `StringHelper` (in `de.mirb.util.io`)
+    ** Helper functions for dealing with combinations of `InputStream` and `String`
+  * `HttpClient` (in `de.mirb.util.web`)
+    ** Basic _HTTP client_ for common HTTP use cases (_GET/POST/PUT/DELETE_).
+      *** Support for _proxy_
+      *** Support for _basic authentication_
+
+
+== New and Noteworthy
+
+  * Version `0.1.0`
+    ** First release which includes `HttpClient` and `StringHelper`
+
+== Roadmap
+Just collection of ideas (without release version and or date).
+
+  * Basic JSON parser
+  * Remove all dependencies to other projects

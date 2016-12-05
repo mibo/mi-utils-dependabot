@@ -9,7 +9,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Created by michael on 01.08.15.
+ * Created by mibo on 01.08.15.
  */
 public class HttpClientTest {
 
