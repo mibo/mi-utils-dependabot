@@ -7,14 +7,15 @@ import java.lang.reflect.Proxy;
 
 public class InvocationWrapper {
 
-  public static <T> Builder<T> forClass(Class<T> cls) {
+  public static <T> Builder<T> forInterface(Class<T> cls) {
     return new Builder<T>(cls);
   }
 
   public static class Builder<T> {
     private final Class<T> wrappedClass;
-    private ProcessorInvocationHandler handler;
+    private WrapperInvocationHandler handler;
     private ExceptionHandler exceptionHandler;
+    private InterceptionHandler interceptionHandler;
 
     public Builder(Class<T> cls) {
       this.wrappedClass = cls;
@@ -25,13 +26,18 @@ public class InvocationWrapper {
       return this;
     }
 
+    public Builder<T> interceptionHandler(InterceptionHandler handler) {
+      this.interceptionHandler = handler;
+      return this;
+    }
+
     public T wrap(T instance) {
       Class<?> aClass = instance.getClass();
       Class<?>[] interfaces = aClass.getInterfaces();
       if(interfaces.length == 0) {
         interfaces = new Class[]{aClass.getClass()};
       }
-      handler = new ProcessorInvocationHandler(instance, exceptionHandler);
+      handler = new WrapperInvocationHandler(instance, exceptionHandler, interceptionHandler);
       Object proxyInstance = Proxy.newProxyInstance(aClass.getClassLoader(), interfaces, handler);
       return wrappedClass.cast(proxyInstance);
     }
@@ -87,20 +93,63 @@ public class InvocationWrapper {
     ExceptionHandlerResult handleException(ExceptionContext context);
   }
 
-  private static class ProcessorInvocationHandler implements InvocationHandler {
+  interface InterceptionHandler {
+    Object handleInterception(InterceptionHandlerContext context) throws Exception;
+  }
+
+  public static final class InterceptionHandlerContext {
+    Object instance;
+    Method method;
+    Object[] parameters;
+
+    public InterceptionHandlerContext(Object instance, Method method, Object[] parameters) {
+      this.instance = instance;
+      this.method = method;
+      this.parameters = parameters;
+    }
+
+    public Object getInstance() {
+      return instance;
+    }
+
+    public Method getMethod() {
+      return method;
+    }
+
+    public Object[] getParameters() {
+      return parameters;
+    }
+
+    public InterceptionHandlerContext setParameters(Object[] parameters) {
+      this.parameters = parameters;
+      return this;
+    }
+
+    public Object proceed() throws Exception {
+      return method.invoke(instance, parameters);
+    }
+  }
+
+  private static class WrapperInvocationHandler implements InvocationHandler {
     private final Object wrappedInstance;
     private final ExceptionHandler exceptionHandler;
+    private final InterceptionHandler interceptionHandler;
 
-    public ProcessorInvocationHandler(Object wrappedInstance, ExceptionHandler exceptionHandler) {
+    public WrapperInvocationHandler(Object wrappedInstance, ExceptionHandler exceptionHandler, InterceptionHandler interceptionHandler) {
       this.wrappedInstance = wrappedInstance;
       this.exceptionHandler = exceptionHandler;
+      this.interceptionHandler = interceptionHandler;
     }
 
     @Override
-    public Object invoke(Object o, Method method, Object[] objects) throws Throwable {
+    public Object invoke(Object proxyInstance, Method method, Object[] parameters) throws Throwable {
       try {
-        final Object invokeResult = method.invoke(wrappedInstance, objects);
-        return invokeResult;
+        if(interceptionHandler == null) {
+          return method.invoke(wrappedInstance, parameters);
+        } else {
+          InterceptionHandlerContext context = new InterceptionHandlerContext(wrappedInstance, method, parameters);
+          return interceptionHandler.handleInterception(context);
+        }
       } catch (InvocationTargetException exception) {
         if(exceptionHandler == null) {
           throw exception.getTargetException();

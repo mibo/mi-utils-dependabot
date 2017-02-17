@@ -2,8 +2,6 @@ package de.mirb.util.core;
 
 import org.junit.Test;
 
-import java.lang.reflect.InvocationTargetException;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -12,7 +10,7 @@ public class InvocationWrapperTest {
   @Test
   public void testSample() {
     final SampleClass instance = new SampleClass();
-    SampleInterface wrapped = InvocationWrapper.forClass(SampleInterface.class).wrap(instance);
+    SampleInterface wrapped = InvocationWrapper.forInterface(SampleInterface.class).wrap(instance);
 
     String hello = wrapped.sayHello();
     assertEquals("Hello", hello);
@@ -21,7 +19,7 @@ public class InvocationWrapperTest {
   @Test
   public void testSampleWithParameter() {
     final SampleClass instance = new SampleClass();
-    SampleInterface wrapped = InvocationWrapper.forClass(SampleInterface.class).wrap(instance);
+    SampleInterface wrapped = InvocationWrapper.forInterface(SampleInterface.class).wrap(instance);
 
     String hello = wrapped.sayHello("Mibo");
     assertEquals("Hello Mibo", hello);
@@ -30,7 +28,7 @@ public class InvocationWrapperTest {
   @Test(expected = IllegalArgumentException.class)
   public void testException() {
     final SampleClass instance = new SampleClass();
-    SampleInterface wrapped = InvocationWrapper.forClass(SampleInterface.class)
+    SampleInterface wrapped = InvocationWrapper.forInterface(SampleInterface.class)
         .wrap(instance);
 
     String hello = wrapped.sayHello("illegal");
@@ -45,7 +43,7 @@ public class InvocationWrapperTest {
         return context.rethrow();
       }
     };
-    SampleInterface wrapped = InvocationWrapper.forClass(SampleInterface.class)
+    SampleInterface wrapped = InvocationWrapper.forInterface(SampleInterface.class)
         .exceptionHandler(handler)
         .wrap(instance);
 
@@ -65,7 +63,7 @@ public class InvocationWrapperTest {
         return context.rethrow();
       }
     };
-    SampleInterface wrapped = InvocationWrapper.forClass(SampleInterface.class)
+    SampleInterface wrapped = InvocationWrapper.forInterface(SampleInterface.class)
         .exceptionHandler(handler)
         .wrap(instance);
 
@@ -80,12 +78,36 @@ public class InvocationWrapperTest {
     }
   }
 
+  @Test
+  public void interceptionHandler() {
+    final SampleClass instance = new SampleClass();
+    InvocationWrapper.InterceptionHandler handler = new InvocationWrapper.InterceptionHandler() {
+      @Override
+      public Object handleInterception(InvocationWrapper.InterceptionHandlerContext context) throws Exception {
+        Object result = context.proceed();
+        if("Hello Mibo".equals(result.toString())) {
+          return "Hello Michael";
+        }
+        return result;
+      }
+    };
+    SampleInterface wrapped = InvocationWrapper.forInterface(SampleInterface.class)
+        .interceptionHandler(handler)
+        .wrap(instance);
+
+    String helloMichael = wrapped.sayHello("Mibo");
+    assertEquals("Hello Michael", helloMichael);
+
+    String helloDoris = wrapped.sayHello("Doris");
+    assertEquals("Hello Doris", helloDoris);
+  }
+
   interface SampleInterface {
     String sayHello();
     String sayHello(String name);
   }
 
-  public final class SampleClass implements SampleInterface {
+    public final class SampleClass implements SampleInterface {
     public String sayHello() {
       return "Hello";
     }
