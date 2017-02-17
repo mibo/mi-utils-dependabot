@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.mirb.utils</groupId>
 	<artifactId>miutils</artifactId>
-	<version>0.1.0</version>
+	<version>0.2.0-SNAPSHOT</version>
 	<name>MiUtils</name>
 
 	<properties>

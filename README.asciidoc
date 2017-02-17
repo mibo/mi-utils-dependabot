@@ -28,6 +28,8 @@ This `miUtils` project is just a collection of classes (code snippets) which is 
 
 == New and Noteworthy
 
+  * Version `0.2.0-SNAPSHOT`
+    ** _TBD_: `InvocationWrapper` to wrap (`Proxy`) instances (of an interface) and provide basic _ExceptionHandling_ and _Pre/Post-Processing_
   * Version `0.1.0`
     ** First release which includes `HttpClient` and `StringHelper`
 
