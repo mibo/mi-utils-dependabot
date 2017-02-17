@@ -41,8 +41,8 @@ public class InvocationWrapperTest {
     final SampleClass instance = new SampleClass();
     InvocationWrapper.ExceptionHandler handler = new InvocationWrapper.ExceptionHandler() {
       @Override
-      public InvocationWrapper.ExceptionHandlerResult handleException(InvocationTargetException ex) {
-        return InvocationWrapper.ExceptionHandler.rethrow();
+      public InvocationWrapper.ExceptionHandlerResult handleException(InvocationWrapper.ExceptionContext context) {
+        return context.rethrow();
       }
     };
     SampleInterface wrapped = InvocationWrapper.forClass(SampleInterface.class)
@@ -58,11 +58,11 @@ public class InvocationWrapperTest {
     final SampleClass instance = new SampleClass();
     InvocationWrapper.ExceptionHandler handler = new InvocationWrapper.ExceptionHandler() {
       @Override
-      public InvocationWrapper.ExceptionHandlerResult handleException(InvocationTargetException ex) {
-        if (ex.getTargetException() instanceof IllegalArgumentException) {
-          return InvocationWrapper.ExceptionHandler.replacedResult("All fine with name");
+      public InvocationWrapper.ExceptionHandlerResult handleException(InvocationWrapper.ExceptionContext context) {
+        if (context.getException() instanceof IllegalArgumentException) {
+          return context.returnResult("All fine with name");
         }
-        return InvocationWrapper.ExceptionHandler.rethrow();
+        return context.rethrow();
       }
     };
     SampleInterface wrapped = InvocationWrapper.forClass(SampleInterface.class)

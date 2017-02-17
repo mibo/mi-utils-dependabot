@@ -37,6 +37,28 @@ public class InvocationWrapper {
     }
   }
 
+  public final static class ExceptionContext {
+    private final Throwable ex;
+
+    public ExceptionContext(Throwable ex) {
+      this.ex = ex;
+    }
+
+    public Throwable getException() {
+      return ex;
+    }
+
+    public ExceptionHandlerResult rethrow() {
+      return new ExceptionHandlerResult(true, null, null);
+    }
+    public ExceptionHandlerResult rethrow(Exception ex) {
+      return new ExceptionHandlerResult(true, ex, null);
+    }
+    public ExceptionHandlerResult returnResult(Object obj) {
+      return new ExceptionHandlerResult(false, null, obj);
+    }
+  }
+
   public static final class ExceptionHandlerResult {
     private boolean rethrow;
     private Exception exception;
@@ -61,18 +83,8 @@ public class InvocationWrapper {
     }
   }
 
-  public static abstract class ExceptionHandler {
-    abstract ExceptionHandlerResult handleException(InvocationTargetException ex);
-
-    public static ExceptionHandlerResult rethrow() {
-      return new ExceptionHandlerResult(true, null, null);
-    }
-    public static ExceptionHandlerResult rethrow(Exception ex) {
-      return new ExceptionHandlerResult(true, ex, null);
-    }
-    public static ExceptionHandlerResult replacedResult(Object obj) {
-      return new ExceptionHandlerResult(false, null, obj);
-    }
+  interface ExceptionHandler {
+    ExceptionHandlerResult handleException(ExceptionContext context);
   }
 
   private static class ProcessorInvocationHandler implements InvocationHandler {
@@ -93,7 +105,7 @@ public class InvocationWrapper {
         if(exceptionHandler == null) {
           throw exception.getTargetException();
         } else {
-          ExceptionHandlerResult result = exceptionHandler.handleException(exception);
+          ExceptionHandlerResult result = exceptionHandler.handleException(new ExceptionContext(exception.getTargetException()));
           if(result.isRethrow()) {
             if(result.getException() == null) {
               throw exception.getTargetException();
