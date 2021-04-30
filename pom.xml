@@ -8,7 +8,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<version.commons-codec>1.9</version.commons-codec>
+		<version.commons-codec>1.15</version.commons-codec>
 		<version.logback>1.0.0</version.logback>
 		<version.junit>4.10</version.junit>
 	</properties>
